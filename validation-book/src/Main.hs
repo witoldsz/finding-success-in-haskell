@@ -7,26 +7,27 @@ main = do
   password <- getLine
   print (validatePassword password)
 
-checkPasswordLength :: String -> Maybe String
+checkPasswordLength :: String -> Either String String
 checkPasswordLength password =
-  case length password > 20 || length password < 10 of
-    True -> Nothing
-    False -> Just password
+  case length password > 20 of
+    True -> Left "Your password cannot be longer than 20 characters."
+    False -> Right password
 
-requireAlphaNum :: String -> Maybe String
+requireAlphaNum :: String -> Either String String
 requireAlphaNum xs =
   case all isAlphaNum xs of
-    False -> Nothing
-    True -> Just xs
+    False -> Left "Your password cannot contain\
+                  \white space or special characters."
+    True -> Right xs
 
-cleanWhitespace :: String -> Maybe String
-cleanWhitespace "" = Nothing
+cleanWhitespace :: String -> Either String String
+cleanWhitespace "" = Left "Your password cannot be empty"
 cleanWhitespace (x : xs) =
   case isSpace x of
     True -> cleanWhitespace xs
-    False -> Just (x : xs)
+    False -> Right (x : xs)
 
-validatePassword :: String -> Maybe String
+validatePassword :: String -> Either String String
 validatePassword password =
   cleanWhitespace password
     >>= requireAlphaNum
