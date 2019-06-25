@@ -11,11 +11,21 @@ newtype Error = Error String
 newtype Username = Username String
   deriving Show
 
+data User = User Username Password
+  deriving Show
+
 main :: IO ()
 main = do
+  putStr "Please enter a username\n> "
+  username <- Username <$> getLine
   putStr "Please enter a password\n> "
   password <- Password <$> getLine
-  print (validatePassword password)
+  print (makeUser username password)
+
+makeUser :: Username -> Password -> Either Error User
+makeUser name password =
+  User <$> validateUsername name
+       <*> validatePassword password
 
 checkPasswordLength :: String -> Either Error Password
 checkPasswordLength password =
@@ -50,13 +60,6 @@ validatePassword (Password password) =
 
 validateUsername :: Username -> Either Error Username
 validateUsername (Username username) =
-  fmap Username $ cleanWhitespace username
+  cleanWhitespace username
     >>= requireAlphaNum
-    >>= checkLength 15
-    -- >>= checkUsernameLength
-
-checkLength :: Int -> String -> Either Error String
-checkLength maxLength s =
-  case (length s > maxLength) of
-  True -> Left (Error $ "Cannot be longer than " <> show maxLength <> " characters.")
-  False -> Right s
+    >>= checkUsernameLength
